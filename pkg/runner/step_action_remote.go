@@ -115,10 +115,22 @@ func (sar *stepActionRemote) main() common.Executor {
 				if sar.RunContext.Config.BindWorkdir {
 					common.Logger(ctx).Debugf("Skipping local actions/checkout because you bound your workspace")
 					return nil
+				} else {
+					eval := sar.RunContext.NewExpressionEvaluator(ctx)
+					copyToPath := path.Join(sar.RunContext.JobContainer.ToContainerPath(sar.RunContext.Config.Workdir), eval.Interpolate(ctx, sar.Step.With["path"]))
+					if sar.RunContext.Config.ReuseWorkspace && sar.RunContext.IsHostEnv(ctx) {
+						_, err := git.FindGitRef(ctx, copyToPath)
+						if err == nil {
+							// if the workspace is intact, skip copying
+							common.Logger(ctx).Debugf("Skipping local actions/checkout because you are reusing an intact workspace")
+							return nil
+						} else {
+							// if the workspace is broken, remove it so it can be recreated
+							os.RemoveAll(copyToPath)
+						}
+					}
+					return sar.RunContext.JobContainer.CopyDir(copyToPath, sar.RunContext.Config.Workdir+string(filepath.Separator)+".", sar.RunContext.Config.UseGitIgnore)(ctx)
 				}
-				eval := sar.RunContext.NewExpressionEvaluator(ctx)
-				copyToPath := path.Join(sar.RunContext.JobContainer.ToContainerPath(sar.RunContext.Config.Workdir), eval.Interpolate(ctx, sar.Step.With["path"]))
-				return sar.RunContext.JobContainer.CopyDir(copyToPath, sar.RunContext.Config.Workdir+string(filepath.Separator)+".", sar.RunContext.Config.UseGitIgnore)(ctx)
 			}
 
 			actionDir := fmt.Sprintf("%s/%s", sar.RunContext.ActionCacheDir(), safeFilename(sar.Step.Uses))
