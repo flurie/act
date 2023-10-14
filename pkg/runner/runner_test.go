@@ -180,7 +180,7 @@ func (j *TestJobFileInfo) runTest(ctx context.Context, t *testing.T, cfg *Config
 		EventName:             j.eventName,
 		EventPath:             cfg.EventPath,
 		Platforms:             j.platforms,
-		ReuseContainers:       false,
+		ReuseWorkspace:        false,
 		Env:                   cfg.Env,
 		Secrets:               cfg.Secrets,
 		Inputs:                cfg.Inputs,

@@ -170,9 +170,14 @@ func (rc *RunContext) startHostEnvironment() common.Executor {
 			return true
 		})
 		cacheDir := rc.ActionCacheDir()
-		randBytes := make([]byte, 8)
-		_, _ = rand.Read(randBytes)
-		miscpath := filepath.Join(cacheDir, hex.EncodeToString(randBytes))
+		var miscpath string
+		if rc.Config.ReuseWorkspace {
+			miscpath = filepath.Join(cacheDir, "static")
+		} else {
+			randBytes := make([]byte, 8)
+			_, _ = rand.Read(randBytes)
+			miscpath = filepath.Join(cacheDir, hex.EncodeToString(randBytes))
+		}
 		actPath := filepath.Join(miscpath, "act")
 		if err := os.MkdirAll(actPath, 0o777); err != nil {
 			return err
@@ -193,7 +198,9 @@ func (rc *RunContext) startHostEnvironment() common.Executor {
 			Workdir:   rc.Config.Workdir,
 			ActPath:   actPath,
 			CleanUp: func() {
-				os.RemoveAll(miscpath)
+				if !rc.Config.ReuseWorkspace {
+					os.RemoveAll(miscpath)
+				}
 			},
 			StdOut: logWriter,
 		}
@@ -260,7 +267,7 @@ func (rc *RunContext) startJobContainer() common.Executor {
 		binds, mounts := rc.GetBindsAndMounts()
 
 		rc.cleanUpJobContainer = func(ctx context.Context) error {
-			if rc.JobContainer != nil && !rc.Config.ReuseContainers {
+			if rc.JobContainer != nil && !rc.Config.ReuseWorkspace {
 				return rc.JobContainer.Remove().
 					Then(container.NewDockerVolumeRemoveExecutor(rc.jobContainerName(), false)).
 					Then(container.NewDockerVolumeRemoveExecutor(rc.jobContainerName()+"-env", false))(ctx)
@@ -369,10 +376,10 @@ func (rc *RunContext) UpdateExtraPath(ctx context.Context, githubEnvPath string)
 	return nil
 }
 
-// stopJobContainer removes the job container (if it exists) and its volume (if it exists) if !rc.Config.ReuseContainers
+// stopJobContainer removes the job container (if it exists) and its volume (if it exists) if !rc.Config.ReuseWorkspace
 func (rc *RunContext) stopJobContainer() common.Executor {
 	return func(ctx context.Context) error {
-		if rc.cleanUpJobContainer != nil && !rc.Config.ReuseContainers {
+		if rc.cleanUpJobContainer != nil && !rc.Config.ReuseWorkspace {
 			return rc.cleanUpJobContainer(ctx)
 		}
 		return nil

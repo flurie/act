@@ -53,7 +53,7 @@ func Execute(ctx context.Context, version string) {
 	rootCmd.Flags().StringArrayVarP(&input.envs, "env", "", []string{}, "env to make available to actions with optional value (e.g. --env myenv=foo or --env myenv)")
 	rootCmd.Flags().StringArrayVarP(&input.inputs, "input", "", []string{}, "action input to make available to actions (e.g. --input myinput=foo)")
 	rootCmd.Flags().StringArrayVarP(&input.platforms, "platform", "P", []string{}, "custom image to use per platform (e.g. -P ubuntu-18.04=nektos/act-environments-ubuntu:18.04)")
-	rootCmd.Flags().BoolVarP(&input.reuseContainers, "reuse", "r", false, "don't remove container(s) on successfully completed workflow(s) to maintain state between runs")
+	rootCmd.Flags().BoolVarP(&input.reuseWorkspace, "reuse", "r", false, "don't remove container(s) on successfully completed workflow(s) to maintain state between runs")
 	rootCmd.Flags().BoolVarP(&input.bindWorkdir, "bind", "b", false, "bind working directory to container, rather than copy")
 	rootCmd.Flags().BoolVarP(&input.forcePull, "pull", "p", true, "pull docker image(s) even if already present")
 	rootCmd.Flags().BoolVarP(&input.forceRebuild, "rebuild", "", true, "rebuild local action docker image(s) even if already present")
@@ -580,7 +580,7 @@ func newRunCommand(ctx context.Context, input *Input) func(*cobra.Command, []str
 			DefaultBranch:                      defaultbranch,
 			ForcePull:                          input.forcePull,
 			ForceRebuild:                       input.forceRebuild,
-			ReuseContainers:                    input.reuseContainers,
+			ReuseWorkspace:                     input.reuseWorkspace,
 			Workdir:                            input.Workdir(),
 			ActionCacheDir:                     input.actionCachePath,
 			BindWorkdir:                        input.bindWorkdir,
