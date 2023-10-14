@@ -13,7 +13,7 @@ type Input struct {
 	workflowsPath                      string
 	autodetectEvent                    bool
 	eventPath                          string
-	reuseContainers                    bool
+	reuseWorkspace                     bool
 	bindWorkdir                        bool
 	secrets                            []string
 	vars                               []string

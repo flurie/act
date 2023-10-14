@@ -76,11 +76,11 @@ func (sd *stepDocker) runUsesContainer() common.Executor {
 
 		return common.NewPipelineExecutor(
 			stepContainer.Pull(rc.Config.ForcePull),
-			stepContainer.Remove().IfBool(!rc.Config.ReuseContainers),
+			stepContainer.Remove().IfBool(!rc.Config.ReuseWorkspace),
 			stepContainer.Create(rc.Config.ContainerCapAdd, rc.Config.ContainerCapDrop),
 			stepContainer.Start(true),
 		).Finally(
-			stepContainer.Remove().IfBool(!rc.Config.ReuseContainers),
+			stepContainer.Remove().IfBool(!rc.Config.ReuseWorkspace),
 		).Finally(stepContainer.Close())(ctx)
 	}
 }

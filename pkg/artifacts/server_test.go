@@ -286,7 +286,7 @@ func runTestJobFile(ctx context.Context, t *testing.T, tjfi TestJobFileInfo) {
 			BindWorkdir:           false,
 			EventName:             tjfi.eventName,
 			Platforms:             tjfi.platforms,
-			ReuseContainers:       false,
+			ReuseWorkspace:        false,
 			ContainerArchitecture: tjfi.containerArchitecture,
 			GitHubInstance:        "github.com",
 			ArtifactServerPath:    artifactsPath,

@@ -301,11 +301,11 @@ func execAsDocker(ctx context.Context, step actionStep, actionName string, based
 	return common.NewPipelineExecutor(
 		prepImage,
 		stepContainer.Pull(forcePull),
-		stepContainer.Remove().IfBool(!rc.Config.ReuseContainers),
+		stepContainer.Remove().IfBool(!rc.Config.ReuseWorkspace),
 		stepContainer.Create(rc.Config.ContainerCapAdd, rc.Config.ContainerCapDrop),
 		stepContainer.Start(true),
 	).Finally(
-		stepContainer.Remove().IfBool(!rc.Config.ReuseContainers),
+		stepContainer.Remove().IfBool(!rc.Config.ReuseWorkspace),
 	).Finally(stepContainer.Close())(ctx)
 }
 
